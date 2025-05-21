@@ -59,4 +59,20 @@ object ChatBox:
       listeners: List[ActorRef[UserMessage]] = List.empty
   ): Behavior[ChatBoxMessage] =
     Behaviors.receive: (context, message) =>
-      Behaviors.same // TODO
+      message match {
+        case NewMessage(msg) => {
+          listeners.foreach( ref => ref ! msg)
+          apply(history = history :+ msg, listeners = listeners)
+        }
+        case GetHistory(ref: ActorRef[History]) => {
+          ref ! History(history)
+          Behaviors.same
+        }
+        case ListenNewMessages(newListener) => {
+          apply(history = history, listeners = listeners :+ newListener)
+        }
+      }
+
+
+
+
